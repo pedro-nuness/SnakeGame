@@ -25,7 +25,7 @@ int snake_length = 1;
 Point food;
 char direction = RIGHT;
 int game_over = 0;
-float speed = 5.0f; // Velocidade controlada por variável (quadros por segundo)
+
 
 void hideCursor( ) {
 	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
@@ -186,7 +186,8 @@ int main( ) {
 	LARGE_INTEGER frequency , start , end;
 	QueryPerformanceFrequency( &frequency );
 
-	double frame_duration = .5 / speed; // Duração de cada quadro em segundos
+	float speed = 10.0f; // Velocidade controlada por variável (quadros por segundo)
+	double frame_duration = 1 / speed; // Duração de cada quadro em segundos
 	QueryPerformanceCounter( &start );
 
 	while ( !game_over ) {
