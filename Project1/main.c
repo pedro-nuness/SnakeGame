@@ -25,6 +25,7 @@ int snake_length = 1;
 Point food;
 char direction = RIGHT;
 int game_over = 0;
+int score = 0; // Variável de pontuação
 
 
 void hideCursor( ) {
@@ -38,6 +39,7 @@ void hideCursor( ) {
 
 void draw_board( ) {
 	system( "cls" );
+	printf("Pontuação: %d\n", score); // Exibe a pontuação na tela
 	for ( int i = 0; i < HEIGHT; i++ ) {
 		for ( int j = 0; j < WIDTH; j++ ) {
 			if ( i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1 ) {
@@ -52,7 +54,7 @@ void draw_board( ) {
 				int is_snake = 0;
 				for ( int k = 0; k < snake_length; k++ ) {
 					if ( snake[ k ].x == j && snake[ k ].y == i ) {
-						if ( !k ) { // Cabe�a da cobra
+						if ( !k ) { // Cabeça da cobra
 							printf( "\033[0;42m \033[0m" );
 						}
 						else {
@@ -63,7 +65,7 @@ void draw_board( ) {
 					}
 				}
 				if ( !is_snake )
-					//Espa�o em branco
+					//Espaço em branco
 					printf( "\033[0;40m \033[0m" );
 			}
 		}
@@ -120,6 +122,7 @@ void check_collision( ) {
 void eat_food( ) {
 	if ( snake[ 0 ].x == food.x && snake[ 0 ].y == food.y ) {
 		snake_length++;
+		score += 10; // Incrementa a pontuação
 		if ( snake_length >= max_size ) {
 			game_over = WIN;
 		}
@@ -172,7 +175,7 @@ int main( ) {
 	printf( "\033[0;37mTexto branco\n" );*/
 
 	// Resetar cor
-	// printf( "\033\033[0mTexto com cor padr�o\n" );
+	// printf( "\033\033[0mTexto com cor padrão\n" );
 
 
 
@@ -186,8 +189,8 @@ int main( ) {
 	LARGE_INTEGER frequency , start , end;
 	QueryPerformanceFrequency( &frequency );
 
-	float speed = 10.0f; // Velocidade controlada por vari�vel (quadros por segundo)
-	double frame_duration = 1 / speed; // Dura��o de cada quadro em segundos
+	float speed = 10.0f; // Velocidade controlada por variável (quadros por segundo)
+	double frame_duration = 1 / speed; // Duração de cada quadro em segundos
 	QueryPerformanceCounter( &start );
 
 	while ( !game_over ) {
@@ -209,10 +212,10 @@ int main( ) {
 
 	switch ( game_over ) {
 	case WIN:
-		printf( "Parab�ns, voce ganhou! Pontuacao: %d\n" , snake_length - 1 );
+		printf( "Parabéns, voce ganhou! Pontuacao: %d\n" , score );
 		break;
 	case LOSE:
-		printf( "Game Over! Pontuacao: %d\n" , snake_length - 1 );
+		printf( "Game Over! Pontuacao: %d\n" , score );
 		break;
 	default:
 		break;
