@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h> 
@@ -25,6 +26,15 @@ int snake_length = 1;
 Point food;
 char direction = RIGHT;
 int game_over = 0;
+
+void hideCursor( ) {
+    HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+    CONSOLE_CURSOR_INFO cursorInfo;
+
+    GetConsoleCursorInfo( hConsole , &cursorInfo );
+    cursorInfo.bVisible = FALSE;  // Define a visibilidade como falsa
+    SetConsoleCursorInfo( hConsole , &cursorInfo );
+}
 
 void draw_board( ) {
     system( "cls" );
@@ -170,6 +180,7 @@ void update_direction( ) {
 }
 
 int main( ) {
+    hideCursor( );
     srand( time( 0 ) );
     snake[ 0 ].x = WIDTH / 2;
     snake[ 0 ].y = HEIGHT / 2;
