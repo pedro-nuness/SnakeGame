@@ -367,29 +367,32 @@ int main( ) {
 		exibirMenu( opcao );
 		tecla = _getch( );
 
-		if ( tecla == 'w' || tecla == 'W' ) {
+		switch ( tolower( tecla ) ) {
+		case 'w':
 			opcao = ( opcao - 1 + 3 ) % 3; // Volta ao último item se ultrapassar o primeiro
-		}
-		else if ( tecla == 's' || tecla == 'S' ) {
+			break;
+		case 's':
 			opcao = ( opcao + 1 ) % 3; // Volta ao primeiro item se ultrapassar o último
-		}
-		else if ( tecla == '\r' ) { // Enter seleciona a opção
-			if ( opcao == 0 ) {
+			break;
+		case '\r': // Enter seleciona a opção
+			switch ( opcao ) {
+			case 0:
 				printf( "\n%sIniciando o jogo...\n%s" , GREEN , RESET );
 				Sleep( 2500 );
 				startgame( );
 				system( "cls" );
 				break;
-			}
-			else if ( opcao == 1 ) {
+			case 1:
 				exibirInstrucoes( );
 				system( "cls" );
-			}
-			else if ( opcao == 2 ) {
+				break;
+			case 2:
 				printf( "\n%sSaindo do jogo. Até a próxima!\n%s" , RED , RESET );
 				break;
 			}
+			break;
 		}
+
 	}
 
 	return 0;
