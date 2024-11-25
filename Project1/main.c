@@ -99,7 +99,7 @@ void draw_board( int BoardWidth , int BoardHeight ) {
 		}
 		printf( "\n" );
 	}
-	printf( "Pontuação: %d/%d\n" , score, CurrentLevel * 100 ); // Exibe a pontuação na tela
+	printf( "Pontuação: %d/%d\n" , score , CurrentLevel * 100 ); // Exibe a pontuação na tela
 }
 
 
@@ -194,8 +194,8 @@ char opposite_direction( char direction ) {
 
 void update_direction( ) {
 	if ( _kbhit( ) ) {
-		char new_dir = _getch( );
-		switch ( new_dir ) {
+		char new_dir = tolower(_getch( ));
+		switch ( new_dir  ) {
 		case UP:
 		case DOWN:
 		case LEFT:
@@ -264,7 +264,7 @@ int RunGame( float speed , int BoardWidth , int BoardHeight ) {
 	case WIN:
 		system( "cls" );
 		printf( "Parabens, voce passou de fase! Pontuacao: %d\n" , GlobalScore );
-	
+
 		Sleep( 2500 );
 
 		return 1;
@@ -316,7 +316,7 @@ void LoseExibirPontuacao( ) {
 
 int startgame( ) {
 	system( "cls" );
-	
+
 	srand( time( 0 ) );
 
 	if ( RunGame( 10.f , 40 , 25 ) )
@@ -360,6 +360,8 @@ int startgame( ) {
 int main( ) {
 	setlocale( LC_ALL , "pt_BR.UTF-8" );
 	hideCursor( );
+	system( "cls" );
+
 	int opcao = 0;
 	char tecla;
 
