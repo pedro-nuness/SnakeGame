@@ -22,6 +22,7 @@
 #define WHITE "\033[37m"
 
 int CurrentLevel = 1;
+int TotalLevels = 4;
 
 #define LOSE 1
 #define WIN 2
@@ -57,9 +58,16 @@ void UpdateConsoleCursorPosition( ) {
 	SetConsoleCursorPosition( hConsole , cursorPosition ); // Move o cursor
 }
 
+void draw_level_info( int currentLevel , int totalLevels ) {
+	printf( "Nível: %d | Faltam %d níveis\n" , currentLevel , totalLevels - currentLevel );
+}
+
 void draw_board( int BoardWidth , int BoardHeight ) {
 
 	UpdateConsoleCursorPosition( );
+
+	draw_level_info( CurrentLevel , TotalLevels );
+
 	for ( int i = 0; i < BoardHeight; i++ ) {
 		for ( int j = 0; j < BoardWidth; j++ ) {
 			if ( i == 0 || i == BoardHeight - 1 || j == 0 || j == BoardWidth - 1 ) {
@@ -91,14 +99,28 @@ void draw_board( int BoardWidth , int BoardHeight ) {
 		}
 		printf( "\n" );
 	}
-	printf( "Pontuação: %d\n" , score ); // Exibe a pontuação na tela
+	printf( "Pontuação: %d/%d\n" , score, CurrentLevel * 100 ); // Exibe a pontuação na tela
 }
 
 
 void generate_food( int BoardWidth , int BoardHeight ) {
-	food.x = rand( ) % ( BoardWidth - 2 ) + 1;
-	food.y = rand( ) % ( BoardHeight - 2 ) + 1;
+	int valid = 0;
+
+	while ( !valid ) {
+		food.x = rand( ) % ( BoardWidth - 2 ) + 1;
+		food.y = rand( ) % ( BoardHeight - 2 ) + 1;
+
+		// Verifica se a comida gerada está em uma posição ocupada pela cobra
+		valid = 1;
+		for ( int i = 0; i < snake_length; i++ ) {
+			if ( snake[ i ].x == food.x && snake[ i ].y == food.y ) {
+				valid = 0;
+				break;
+			}
+		}
+	}
 }
+
 
 void move_snake( ) {
 	Point prev = snake[ 0 ];
@@ -293,7 +315,7 @@ void LoseExibirPontuacao( ) {
 
 int startgame( ) {
 	system( "cls" );
-	hideCursor( );
+	
 	srand( time( 0 ) );
 
 	if ( RunGame( 10.f , 40 , 25 ) )
@@ -336,7 +358,7 @@ int startgame( ) {
 
 int main( ) {
 	setlocale( LC_ALL , "pt_BR.UTF-8" );
-
+	hideCursor( );
 	int opcao = 0;
 	char tecla;
 
