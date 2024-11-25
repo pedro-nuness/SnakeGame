@@ -3,13 +3,25 @@
 #include <stdlib.h>
 #include <conio.h> 
 #include <time.h>  
+#include <locale.h>
 
-#define WIDTH 50
-#define HEIGHT 50
+#define MAX_WIDTH 50
+#define MAX_HEIGHT 50
 #define UP 'w'
 #define DOWN 's'
 #define LEFT 'a'
 #define RIGHT 'd'
+
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define PURPLE "\033[35m"
+#define CYAN "\033[36m"
+#define WHITE "\033[37m"
+
+int CurrentLevel = 1;
 
 #define LOSE 1
 #define WIN 2
@@ -18,11 +30,11 @@ typedef struct {
 	int x , y;
 } Point;
 
-const int max_size = WIDTH * HEIGHT;
+const int max_size = MAX_WIDTH * MAX_HEIGHT;
 
 int GlobalScore;
 
-Point snake[ WIDTH * HEIGHT ];
+Point snake[ MAX_WIDTH * MAX_HEIGHT ];
 int snake_length = 1;
 Point food;
 char direction = RIGHT;
@@ -39,17 +51,23 @@ void hideCursor( ) {
 	SetConsoleCursorInfo( hConsole , &cursorInfo );
 }
 
-void draw_board( int BoardWidth, int BoardHeight ) {
-	system( "cls" );
+void UpdateConsoleCursorPosition( ) {
+	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+	COORD cursorPosition = { 0, 0 }; // Define o cursor na posição inicial
+	SetConsoleCursorPosition( hConsole , cursorPosition ); // Move o cursor
+}
 
+void draw_board( int BoardWidth , int BoardHeight ) {
+
+	UpdateConsoleCursorPosition( );
 	for ( int i = 0; i < BoardHeight; i++ ) {
 		for ( int j = 0; j < BoardWidth; j++ ) {
 			if ( i == 0 || i == BoardHeight - 1 || j == 0 || j == BoardWidth - 1 ) {
-				//Parede
+				// Parede
 				printf( "\033[0;100m \033[0m" );
 			}
 			else if ( i == food.y && j == food.x ) {
-				//Comida
+				// Comida
 				printf( "\033[0;101m \033[0m" );
 			}
 			else {
@@ -67,16 +85,17 @@ void draw_board( int BoardWidth, int BoardHeight ) {
 					}
 				}
 				if ( !is_snake )
-					//Espaço em branco
-					printf( "\033[0;40m \033[0m" );
+					// Espaço em branco
+					printf( "\033[0;47m \033[0m" );
 			}
 		}
 		printf( "\n" );
 	}
-	printf( "Pontuacao: %d\n" , score ); // Exibe a pontuação na tela
+	printf( "Pontuação: %d\n" , score ); // Exibe a pontuação na tela
 }
 
-void generate_food(int BoardWidth, int BoardHeight ) {
+
+void generate_food( int BoardWidth , int BoardHeight ) {
 	food.x = rand( ) % ( BoardWidth - 2 ) + 1;
 	food.y = rand( ) % ( BoardHeight - 2 ) + 1;
 }
@@ -109,7 +128,7 @@ void move_snake( ) {
 	}
 }
 
-void check_collision(int boardwidth, int boardheight ) {
+void check_collision( int boardwidth , int boardheight ) {
 	if ( snake[ 0 ].x == 0 || snake[ 0 ].x == boardwidth - 1 ||
 		snake[ 0 ].y == 0 || snake[ 0 ].y == boardheight - 1 ) {
 		game_over = LOSE;
@@ -127,12 +146,12 @@ void eat_food( int BoardWidth , int BoardHeight ) {
 		snake_length++;
 		score += 10; // Incrementa a pontuação
 		GlobalScore += 10;
-		if ( !( score % 100 ) ) {
+		if ( !( score % ( CurrentLevel * 100 ) ) ) {
 			game_over = WIN;
 			score = 0;
 		}
 
-		generate_food( BoardWidth, BoardHeight );
+		generate_food( BoardWidth , BoardHeight );
 	}
 }
 
@@ -168,17 +187,28 @@ void update_direction( ) {
 	}
 }
 
-int RunGame( float speed, int BoardWidth, int BoardHeight ) {
+int RunGame( float speed , int BoardWidth , int BoardHeight ) {
+	system( "cls" );
 	snake[ 0 ].x = BoardWidth / 2;
 	snake[ 0 ].y = BoardHeight / 2;
-	generate_food(BoardWidth, BoardHeight );
+	// Reseta o tamanho da cobra
+	snake_length = 1;
+	game_over = 0;
+	// Inicializa o restante do corpo da cobra, se necessário
+	for ( int i = 1; i < MAX_WIDTH * MAX_HEIGHT; i++ ) {
+		snake[ i ].x = 0;
+		snake[ i ].y = 0;
+	}
+
+
+	generate_food( BoardWidth , BoardHeight );
 
 	// Controle de tempo
 	LARGE_INTEGER frequency , start , end , boardStart , boardEnd;
 	QueryPerformanceFrequency( &frequency );
 
 	double frame_duration = 1 / speed; // Duração de cada quadro em segundos
-	double board_update_duration = 0.05; 
+	double board_update_duration = 0.05;
 	QueryPerformanceCounter( &start );
 	QueryPerformanceCounter( &boardStart );
 
@@ -195,25 +225,24 @@ int RunGame( float speed, int BoardWidth, int BoardHeight ) {
 
 			update_direction( );
 			move_snake( );
-			eat_food(BoardWidth, BoardHeight );
-			check_collision( BoardWidth, BoardHeight);
+			eat_food( BoardWidth , BoardHeight );
+			check_collision( BoardWidth , BoardHeight );
 		}
 
 		// Atualiza o desenho da board 
 		if ( board_elapsed_time >= board_update_duration ) {
 			boardStart = boardEnd;
-			draw_board(BoardWidth, BoardHeight );
+			draw_board( BoardWidth , BoardHeight );
 		}
 
-		Sleep( 10 ); 
+		Sleep( 10 );
 	}
 
 	switch ( game_over ) {
 	case WIN:
-		snake_length = 1;
+		system( "cls" );
 		printf( "Parabens, voce passou de fase! Pontuacao: %d\n" , GlobalScore );
-		game_over = 0;
-
+	
 		Sleep( 2500 );
 
 		return 1;
@@ -230,28 +259,119 @@ int RunGame( float speed, int BoardWidth, int BoardHeight ) {
 
 
 
-int main( ) {
 
+void exibirMenu( int opcao ) {
+	UpdateConsoleCursorPosition( );
+	printf( "%s==============================\n" , CYAN );
+	printf( "         %sJOGO DA COBRINHA\n" , GREEN );
+	printf( "%s==============================\n\n" , CYAN );
+
+	printf( "%s%s1. Iniciar Jogo%s\n" , opcao == 0 ? YELLOW : WHITE , opcao == 0 ? "-> " : "   " , RESET );
+	printf( "%s%s2. Instruções%s\n" , opcao == 1 ? YELLOW : WHITE , opcao == 1 ? "-> " : "   " , RESET );
+	printf( "%s%s3. Sair%s\n" , opcao == 2 ? YELLOW : WHITE , opcao == 2 ? "-> " : "   " , RESET );
+
+	printf( "\n%sUse W/S para navegar e Enter para selecionar.%s\n" , PURPLE , RESET );
+}
+
+void exibirInstrucoes( ) {
+	system( "clear || cls" );
+	printf( "\n%sINSTRUÇÕES DO JOGO\n" , BLUE );
+	printf( "=======================\n" );
+	printf( "%s- Use W/A/S/D para mover a cobrinha.\n" , WHITE );
+	printf( "- Coma as frutas para crescer e ganhar pontos.\n" );
+	printf( "- Evite colidir com as paredes ou com o próprio corpo.\n" );
+	printf( "%sPressione qualquer tecla para voltar ao menu.%s\n" , GREEN , RESET );
+	_getch( ); // Pausa para o usuário ler as instruções
+}
+
+
+void LoseExibirPontuacao( ) {
+	system( "cls" );
+	printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
+	Sleep( 5000 );
+}
+
+int startgame( ) {
+	system( "cls" );
 	hideCursor( );
 	srand( time( 0 ) );
 
-	if ( !RunGame( 10.f , 40, 25) ) {
-		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
-	}
-	else if ( !RunGame( 15.f, 30, 25) ) {
-		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
-	}
-	else if ( !RunGame( 20.f , 20, 20) ) {
-		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
-	}
-	else if ( !RunGame( 25.f , 15, 15) ) {
-		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
-	}
+	if ( RunGame( 10.f , 40 , 25 ) )
+		CurrentLevel++;
 	else {
-		system( "cls" );
-		printf( "Parabéns, voce ganhou o jogo!\n" );
-		Sleep( 10000 );
+		LoseExibirPontuacao( );
+		return 0;
+	}
+
+	if ( RunGame( 15.f , 30 , 25 ) )
+		CurrentLevel++;
+	else {
+		LoseExibirPontuacao( );
+		return 0;
+	}
+
+	if ( RunGame( 20.f , 20 , 20 ) )
+		CurrentLevel++;
+	else {
+		LoseExibirPontuacao( );
+		return 0;
+	}
+
+	if ( RunGame( 25.f , 15 , 15 ) )
+		CurrentLevel++;
+	else {
+		LoseExibirPontuacao( );
+		return 0;
+	}
+
+
+	system( "cls" );
+	printf( "Parabéns, voce ganhou o jogo!\n" );
+	Sleep( 10000 );
+
+
+	return 0;
+}
+
+
+int main( ) {
+	setlocale( LC_ALL , "pt_BR.UTF-8" );
+
+	int opcao = 0;
+	char tecla;
+
+	while ( 1 ) {
+
+		exibirMenu( opcao );
+		tecla = _getch( );
+
+		if ( tecla == 'w' || tecla == 'W' ) {
+			opcao = ( opcao - 1 + 3 ) % 3; // Volta ao último item se ultrapassar o primeiro
+		}
+		else if ( tecla == 's' || tecla == 'S' ) {
+			opcao = ( opcao + 1 ) % 3; // Volta ao primeiro item se ultrapassar o último
+		}
+		else if ( tecla == '\r' ) { // Enter seleciona a opção
+			if ( opcao == 0 ) {
+				printf( "\n%sIniciando o jogo...\n%s" , GREEN , RESET );
+				Sleep( 2500 );
+				startgame( );
+				system( "cls" );
+				break;
+			}
+			else if ( opcao == 1 ) {
+				exibirInstrucoes( );
+				system( "cls" );
+			}
+			else if ( opcao == 2 ) {
+				printf( "\n%sSaindo do jogo. Até a próxima!\n%s" , RED , RESET );
+				break;
+			}
+		}
 	}
 
 	return 0;
 }
+
+
+
