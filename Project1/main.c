@@ -309,8 +309,10 @@ void exibirInstrucoes( ) {
 
 void LoseExibirPontuacao( ) {
 	system( "cls" );
-	CurrentLevel = 0;
+	CurrentLevel = 1;
 	printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
+	GlobalScore = 0;
+	score = 0;
 	Sleep( 5000 );
 }
 
