@@ -5,7 +5,7 @@
 #include <time.h>  
 
 #define WIDTH 50
-#define HEIGHT 20
+#define HEIGHT 50
 #define UP 'w'
 #define DOWN 's'
 #define LEFT 'a'
@@ -19,6 +19,8 @@ typedef struct {
 } Point;
 
 const int max_size = WIDTH * HEIGHT;
+
+int GlobalScore;
 
 Point snake[ WIDTH * HEIGHT ];
 int snake_length = 1;
@@ -37,12 +39,12 @@ void hideCursor( ) {
 	SetConsoleCursorInfo( hConsole , &cursorInfo );
 }
 
-void draw_board( ) {
+void draw_board( int BoardWidth, int BoardHeight ) {
 	system( "cls" );
-	printf("Pontuação: %d\n", score); // Exibe a pontuação na tela
-	for ( int i = 0; i < HEIGHT; i++ ) {
-		for ( int j = 0; j < WIDTH; j++ ) {
-			if ( i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1 ) {
+
+	for ( int i = 0; i < BoardHeight; i++ ) {
+		for ( int j = 0; j < BoardWidth; j++ ) {
+			if ( i == 0 || i == BoardHeight - 1 || j == 0 || j == BoardWidth - 1 ) {
 				//Parede
 				printf( "\033[0;100m \033[0m" );
 			}
@@ -71,11 +73,12 @@ void draw_board( ) {
 		}
 		printf( "\n" );
 	}
+	printf( "Pontuacao: %d\n" , score ); // Exibe a pontuação na tela
 }
 
-void generate_food( ) {
-	food.x = rand( ) % ( WIDTH - 2 ) + 1;
-	food.y = rand( ) % ( HEIGHT - 2 ) + 1;
+void generate_food(int BoardWidth, int BoardHeight ) {
+	food.x = rand( ) % ( BoardWidth - 2 ) + 1;
+	food.y = rand( ) % ( BoardHeight - 2 ) + 1;
 }
 
 void move_snake( ) {
@@ -106,9 +109,9 @@ void move_snake( ) {
 	}
 }
 
-void check_collision( ) {
-	if ( snake[ 0 ].x == 0 || snake[ 0 ].x == WIDTH - 1 ||
-		snake[ 0 ].y == 0 || snake[ 0 ].y == HEIGHT - 1 ) {
+void check_collision(int boardwidth, int boardheight ) {
+	if ( snake[ 0 ].x == 0 || snake[ 0 ].x == boardwidth - 1 ||
+		snake[ 0 ].y == 0 || snake[ 0 ].y == boardheight - 1 ) {
 		game_over = LOSE;
 	}
 
@@ -119,14 +122,17 @@ void check_collision( ) {
 	}
 }
 
-void eat_food( ) {
+void eat_food( int BoardWidth , int BoardHeight ) {
 	if ( snake[ 0 ].x == food.x && snake[ 0 ].y == food.y ) {
 		snake_length++;
 		score += 10; // Incrementa a pontuação
-		if ( snake_length >= max_size ) {
+		GlobalScore += 10;
+		if ( !( score % 100 ) ) {
 			game_over = WIN;
+			score = 0;
 		}
-		generate_food( );
+
+		generate_food( BoardWidth, BoardHeight );
 	}
 }
 
@@ -162,66 +168,90 @@ void update_direction( ) {
 	}
 }
 
-int main( ) {
-
-	// Cores de texto
-   /*
-	printf( "\033[0;31mTexto vermelho\n" );
-	printf( "\033[0;32mTexto verde\n" );
-	printf( "\033[0;33mTexto amarelo\n" );
-	printf( "\033[0;34mTexto azul\n" );
-	printf( "\033[0;35mTexto magenta\n" );
-	printf( "\033[0;36mTexto ciano\n" );
-	printf( "\033[0;37mTexto branco\n" );*/
-
-	// Resetar cor
-	// printf( "\033\033[0mTexto com cor padrão\n" );
-
-
-
-	hideCursor( );
-	srand( time( 0 ) );
-	snake[ 0 ].x = WIDTH / 2;
-	snake[ 0 ].y = HEIGHT / 2;
-	generate_food( );
+int RunGame( float speed, int BoardWidth, int BoardHeight ) {
+	snake[ 0 ].x = BoardWidth / 2;
+	snake[ 0 ].y = BoardHeight / 2;
+	generate_food(BoardWidth, BoardHeight );
 
 	// Controle de tempo
-	LARGE_INTEGER frequency , start , end;
+	LARGE_INTEGER frequency , start , end , boardStart , boardEnd;
 	QueryPerformanceFrequency( &frequency );
 
-	float speed = 10.0f; // Velocidade controlada por variável (quadros por segundo)
 	double frame_duration = 1 / speed; // Duração de cada quadro em segundos
+	double board_update_duration = 0.05; 
 	QueryPerformanceCounter( &start );
+	QueryPerformanceCounter( &boardStart );
 
 	while ( !game_over ) {
 		QueryPerformanceCounter( &end );
+		QueryPerformanceCounter( &boardEnd );
+
 		double elapsed_time = ( double ) ( end.QuadPart - start.QuadPart ) / frequency.QuadPart;
+		double board_elapsed_time = ( double ) ( boardEnd.QuadPart - boardStart.QuadPart ) / frequency.QuadPart;
 
-		draw_board( );
-		Sleep( 100 );
-
+		// Atualiza o jogo
 		if ( elapsed_time >= frame_duration ) {
 			start = end;
 
 			update_direction( );
 			move_snake( );
-			eat_food( );
-			check_collision( );
+			eat_food(BoardWidth, BoardHeight );
+			check_collision( BoardWidth, BoardHeight);
 		}
+
+		// Atualiza o desenho da board 
+		if ( board_elapsed_time >= board_update_duration ) {
+			boardStart = boardEnd;
+			draw_board(BoardWidth, BoardHeight );
+		}
+
+		Sleep( 10 ); 
 	}
 
 	switch ( game_over ) {
 	case WIN:
-		printf( "Parabéns, voce ganhou! Pontuacao: %d\n" , score );
+		snake_length = 1;
+		printf( "Parabens, voce passou de fase! Pontuacao: %d\n" , GlobalScore );
+		game_over = 0;
+
+		Sleep( 2500 );
+
+		return 1;
 		break;
 	case LOSE:
-		printf( "Game Over! Pontuacao: %d\n" , score );
+		return 0;
 		break;
 	default:
 		break;
 	}
 
-	Sleep( 10000 );
+	return 0;
+}
+
+
+
+int main( ) {
+
+	hideCursor( );
+	srand( time( 0 ) );
+
+	if ( !RunGame( 10.f , 40, 25) ) {
+		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
+	}
+	else if ( !RunGame( 15.f, 30, 25) ) {
+		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
+	}
+	else if ( !RunGame( 20.f , 20, 20) ) {
+		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
+	}
+	else if ( !RunGame( 25.f , 15, 15) ) {
+		printf( "Game Over! Pontuacao: %d\n" , GlobalScore );
+	}
+	else {
+		system( "cls" );
+		printf( "Parabéns, voce ganhou o jogo!\n" );
+		Sleep( 10000 );
+	}
 
 	return 0;
 }
