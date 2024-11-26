@@ -393,6 +393,8 @@ int main( ) {
 				break;
 			case 2:
 				printf( "\n%sSaindo do jogo. Até a próxima!\n%s" , RED , RESET );
+				Sleep( 2500 );
+				return 0;
 				break;
 			}
 			break;
