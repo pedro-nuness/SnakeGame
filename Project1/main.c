@@ -42,6 +42,35 @@ char direction = RIGHT;
 int game_over = 0;
 int score = 0; // Variável de pontuação
 
+typedef struct {
+	float Speed;
+	int width;
+	int height;
+} LevelInfo;
+
+void saveToFile( const char * filename , LevelInfo * data ) {
+	FILE * file = fopen( filename , "wb" );
+	if ( !file ) {
+		perror( "Erro ao abrir o arquivo para escrita" );
+		exit( EXIT_FAILURE );
+	}
+
+	fwrite( data , sizeof( LevelInfo ) , 1 , file );
+	fclose( file );
+	printf( "Dados salvos com sucesso no arquivo '%s'.\n" , filename );
+}
+
+void readFromFile( const char * filename , LevelInfo * data ) {
+	FILE * file = fopen( filename , "rb" );
+	if ( !file ) {
+		perror( "Erro ao abrir o arquivo para leitura" );
+		exit( EXIT_FAILURE );
+	}
+
+	fread( data , sizeof( LevelInfo ) , 1 , file );
+	fclose( file );
+	printf( "Dados lidos com sucesso do arquivo '%s'.\n" , filename );
+}
 
 void hideCursor( ) {
 	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
@@ -209,7 +238,22 @@ void update_direction( ) {
 	}
 }
 
-int RunGame( float speed , int BoardWidth , int BoardHeight ) {
+int RunGame( int Level ) {
+
+	LevelInfo level;
+	char filename[ 60 ];     
+
+	snprintf( filename , sizeof( filename ) , "%s%d.bin" , "fase", Level );
+
+	readFromFile( filename , &level );
+
+	int BoardWidth , BoardHeight;
+	float speed;
+
+	BoardWidth = level.width;
+	BoardHeight = level.height;
+	speed = level.Speed;
+
 	system( "cls" );
 	snake[ 0 ].x = BoardWidth / 2;
 	snake[ 0 ].y = BoardHeight / 2;
@@ -315,28 +359,28 @@ int startgame( ) {
 
 	srand( time( 0 ) );
 
-	if ( RunGame( 20.f , 40 , 25 ) )
+	if ( RunGame( CurrentLevel ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
 		return 0;
 	}
 
-	if ( RunGame( 20 , 30 , 25 ) )
+	if ( RunGame( CurrentLevel ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
 		return 0;
 	}
 
-	if ( RunGame( 25.f , 20 , 20 ) )
+	if ( RunGame( CurrentLevel ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
 		return 0;
 	}
 
-	if ( RunGame( 25.f , 15 , 15 ) )
+	if ( RunGame( CurrentLevel ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
@@ -351,6 +395,49 @@ int startgame( ) {
 
 	return 0;
 }
+
+//#include <stdio.h>
+//#include <stdlib.h>
+//
+//// Estrutura para armazenar as variáveis
+//
+//
+//
+//int main( ) {
+//	const char * filename = "dados.bin";
+//	LevelInfo data;
+//
+//	// Inserir valores para salvar
+//	printf( "Digite o primeiro inteiro: " );
+//	scanf( "%d" , &data.width );
+//
+//	printf( "Digite o segundo inteiro: " );
+//	scanf( "%d" , &data.height );
+//
+//	printf( "Digite um número real: " );
+//	scanf( "%f" , &data.Speed );
+//
+//	// Salvar dados no arquivo
+//	saveToFile( filename , &data );
+//
+//	// Limpar os valores para simular leitura
+//	data.height = 0;
+//	data.width = 0;
+//	data.Speed = 0.0f;
+//
+//	// Ler dados do arquivo
+//	readFromFile( filename , &data );
+//
+//	// Exibir os valores lidos
+//	printf( "Valores lidos do arquivo:\n" );
+//	printf( "Primeiro inteiro: %d\n" , data.height );
+//	printf( "Segundo inteiro: %d\n" , data.width );
+//	printf( "Número real: %.2f\n" , data.Speed );
+//
+//	return 0;
+//}
+
+
 
 
 int main( ) {
