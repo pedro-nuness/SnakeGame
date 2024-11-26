@@ -5,8 +5,7 @@
 #include <time.h>  
 #include <locale.h>
 
-#define MAX_WIDTH 50
-#define MAX_HEIGHT 50
+
 #define UP 'w'
 #define DOWN 's'
 #define LEFT 'a'
@@ -31,14 +30,12 @@ typedef struct {
 	int x , y;
 } Point;
 
-const int max_size = MAX_WIDTH * MAX_HEIGHT;
 
 int GlobalScore;
 
 Point * snake = NULL; 
 int snake_capacity = 0; // Capacidade atual da array
 int snake_length = 1;  // Tamanho atual da cobra
-
 
 Point food;
 char direction = RIGHT;
