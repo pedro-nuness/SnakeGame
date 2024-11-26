@@ -230,7 +230,7 @@ int RunGame( float speed , int BoardWidth , int BoardHeight ) {
 	QueryPerformanceFrequency( &frequency );
 
 	double frame_duration = 1 / speed; // Duração de cada quadro em segundos
-	double board_update_duration = 0.05;
+	double board_update_duration = 0.01;
 	QueryPerformanceCounter( &start );
 	QueryPerformanceCounter( &boardStart );
 
@@ -256,8 +256,6 @@ int RunGame( float speed , int BoardWidth , int BoardHeight ) {
 			boardStart = boardEnd;
 			draw_board( BoardWidth , BoardHeight );
 		}
-
-		Sleep( 10 );
 	}
 
 	switch ( game_over ) {
@@ -321,21 +319,21 @@ int startgame( ) {
 
 	srand( time( 0 ) );
 
-	if ( RunGame( 10.f , 40 , 25 ) )
+	if ( RunGame( 20.f , 40 , 25 ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
 		return 0;
 	}
 
-	if ( RunGame( 15.f , 30 , 25 ) )
+	if ( RunGame( 20 , 30 , 25 ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
 		return 0;
 	}
 
-	if ( RunGame( 20.f , 20 , 20 ) )
+	if ( RunGame( 25.f , 20 , 20 ) )
 		CurrentLevel++;
 	else {
 		LoseExibirPontuacao( );
