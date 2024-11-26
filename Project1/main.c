@@ -94,9 +94,6 @@ void draw_level_info( int currentLevel , int totalLevels ) {
 	printf( "Nível: %d | Faltam %d níveis\n" , currentLevel , totalLevels - currentLevel );
 }
 
-
-
-
 void draw_board( int BoardWidth , int BoardHeight ) {
 
 	UpdateConsoleCursorPosition( );
@@ -195,8 +192,6 @@ void check_collision( int boardwidth , int boardheight ) {
 	}
 }
 
-
-
 char opposite_direction( char direction ) {
 	switch ( direction ) {
 	case UP:
@@ -228,7 +223,6 @@ void update_direction( ) {
 		}
 	}
 }
-
 
 void grow_snake_capacity( ) {
 	if ( snake_length >= snake_capacity ) {
@@ -343,9 +337,6 @@ int RunGame( int Level ) {
 	return 0;
 }
 
-
-
-
 void exibirMenu( int opcao ) {
 	UpdateConsoleCursorPosition( );
 	printf( "%s==============================\n" , CYAN );
@@ -369,9 +360,6 @@ void exibirInstrucoes( ) {
 	printf( "%sPressione qualquer tecla para voltar ao menu.%s\n" , GREEN , RESET );
 	_getch( ); // Pausa para o usuário ler as instruções
 }
-
-
-
 
 void LoseExibirPontuacao( ) {
 	system( "cls" );
