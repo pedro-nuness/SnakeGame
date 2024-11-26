@@ -35,9 +35,9 @@ const int max_size = MAX_WIDTH * MAX_HEIGHT;
 
 int GlobalScore;
 
-Point * snake = NULL; // Ponteiro para a cobra
-int snake_capacity = 0; // Capacidade atual do array dinâmico
-int snake_length = 1;   // Tamanho atual da cobra
+Point * snake = NULL; 
+int snake_capacity = 0; // Capacidade atual da array
+int snake_length = 1;  // Tamanho atual da cobra
 
 
 Point food;
