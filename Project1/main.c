@@ -35,8 +35,11 @@ const int max_size = MAX_WIDTH * MAX_HEIGHT;
 
 int GlobalScore;
 
-Point snake[ MAX_WIDTH * MAX_HEIGHT ];
-int snake_length = 1;
+Point * snake = NULL; // Ponteiro para a cobra
+int snake_capacity = 0; // Capacidade atual do array dinâmico
+int snake_length = 1;   // Tamanho atual da cobra
+
+
 Point food;
 char direction = RIGHT;
 int game_over = 0;
@@ -91,6 +94,9 @@ void draw_level_info( int currentLevel , int totalLevels ) {
 	printf( "Nível: %d | Faltam %d níveis\n" , currentLevel , totalLevels - currentLevel );
 }
 
+
+
+
 void draw_board( int BoardWidth , int BoardHeight ) {
 
 	UpdateConsoleCursorPosition( );
@@ -131,7 +137,6 @@ void draw_board( int BoardWidth , int BoardHeight ) {
 	printf( "Pontuação: %d/%d\n" , score , CurrentLevel * 100 ); // Exibe a pontuação na tela
 }
 
-
 void generate_food( int BoardWidth , int BoardHeight ) {
 	int validPosition = 0;
 
@@ -139,7 +144,6 @@ void generate_food( int BoardWidth , int BoardHeight ) {
 		food.x = rand( ) % ( BoardWidth - 2 ) + 1;
 		food.y = rand( ) % ( BoardHeight - 2 ) + 1;
 
-		// Verifica se a comida gerada está em uma posição ocupada pela cobra
 		validPosition = 1;
 		for ( int i = 0; i < snake_length; i++ ) {
 			if ( snake[ i ].x == food.x && snake[ i ].y == food.y ) {
@@ -149,7 +153,6 @@ void generate_food( int BoardWidth , int BoardHeight ) {
 		}
 	}
 }
-
 
 void move_snake( ) {
 	Point prev = snake[ 0 ];
@@ -192,19 +195,7 @@ void check_collision( int boardwidth , int boardheight ) {
 	}
 }
 
-void eat_food( int BoardWidth , int BoardHeight ) {
-	if ( snake[ 0 ].x == food.x && snake[ 0 ].y == food.y ) {
-		snake_length++;
-		score += 10; // Incrementa a pontuação
-		GlobalScore += 10;
-		if ( !( score % ( CurrentLevel * 100 ) ) ) {
-			game_over = WIN;
-			score = 0;
-		}
 
-		generate_food( BoardWidth , BoardHeight );
-	}
-}
 
 char opposite_direction( char direction ) {
 	switch ( direction ) {
@@ -238,12 +229,56 @@ void update_direction( ) {
 	}
 }
 
+
+void grow_snake_capacity( ) {
+	if ( snake_length >= snake_capacity ) {
+		snake_capacity = snake_capacity == 0 ? 4 : snake_capacity * 2; // Dobra a capacidade
+		snake = ( Point * ) realloc( snake , snake_capacity * sizeof( Point ) );
+		if ( !snake ) {
+			perror( "Erro ao alocar memória para a cobra" );
+			exit( EXIT_FAILURE );
+		}
+	}
+}
+
+void initialize_snake( int BoardWidth , int BoardHeight ) {
+	snake_capacity = 4; // Capacidade inicial
+	snake_length = 1;
+	snake = ( Point * ) malloc( snake_capacity * sizeof( Point ) );
+	if ( !snake ) {
+		perror( "Erro ao alocar memória para a cobra" );
+		exit( EXIT_FAILURE );
+	}
+	snake[ 0 ].x = BoardWidth / 2;
+	snake[ 0 ].y = BoardHeight / 2;
+}
+
+void eat_food( int BoardWidth , int BoardHeight ) {
+	if ( snake[ 0 ].x == food.x && snake[ 0 ].y == food.y ) {
+		grow_snake_capacity( );
+		snake_length++;
+		score += 10; // Incrementa a pontuação
+		GlobalScore += 10;
+		if ( !( score % ( CurrentLevel * 100 ) ) ) {
+			game_over = WIN;
+			score = 0;
+		}
+		generate_food( BoardWidth , BoardHeight );
+	}
+}
+
+void free_snake( ) {
+	if ( snake ) {
+		free( snake );
+		snake = NULL;
+	}
+}
+
 int RunGame( int Level ) {
-
 	LevelInfo level;
-	char filename[ 60 ];     
+	char filename[ 60 ];
 
-	snprintf( filename , sizeof( filename ) , "%s%d.bin" , "fase", Level );
+	snprintf( filename , sizeof( filename ) , "%s%d.bin" , "fase" , Level );
 
 	readFromFile( filename , &level );
 
@@ -255,20 +290,11 @@ int RunGame( int Level ) {
 	speed = level.Speed;
 
 	system( "cls" );
-	snake[ 0 ].x = BoardWidth / 2;
-	snake[ 0 ].y = BoardHeight / 2;
-	// Reseta o tamanho da cobra
-	snake_length = 1;
+	initialize_snake( BoardWidth , BoardHeight );
 	game_over = 0;
-	// reseta o restante do corpo da cobra
-	for ( int i = 1; i < MAX_WIDTH * MAX_HEIGHT; i++ ) {
-		snake[ i ].x = 0;
-		snake[ i ].y = 0;
-	}
 
 	generate_food( BoardWidth , BoardHeight );
 
-	// Controle de tempo
 	LARGE_INTEGER frequency , start , end , boardStart , boardEnd;
 	QueryPerformanceFrequency( &frequency );
 
@@ -298,13 +324,13 @@ int RunGame( int Level ) {
 		}
 	}
 
+	free_snake( ); // Libera a memória ao final do jogo
+
 	switch ( game_over ) {
 	case WIN:
 		system( "cls" );
 		printf( "Parabens, voce passou de fase! Pontuacao: %d\n" , GlobalScore );
-
 		Sleep( 2500 );
-
 		return 1;
 		break;
 	case LOSE:
