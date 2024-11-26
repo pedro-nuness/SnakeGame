@@ -22,7 +22,7 @@
 #define WHITE "\033[37m"
 
 int CurrentLevel = 1;
-int TotalLevels = 4;
+int TotalLevels = 5;
 
 #define LOSE 1
 #define WIN 2
@@ -345,6 +345,8 @@ void exibirInstrucoes( ) {
 }
 
 
+
+
 void LoseExibirPontuacao( ) {
 	system( "cls" );
 	CurrentLevel = 1;
@@ -359,34 +361,14 @@ int startgame( ) {
 
 	srand( time( 0 ) );
 
-	if ( RunGame( CurrentLevel ) )
-		CurrentLevel++;
-	else {
-		LoseExibirPontuacao( );
-		return 0;
+	for ( int i = CurrentLevel; i <= TotalLevels; i++ ) {
+		if ( RunGame( CurrentLevel ) )
+			CurrentLevel++;
+		else {
+			LoseExibirPontuacao( );
+			return 0;
+		}
 	}
-
-	if ( RunGame( CurrentLevel ) )
-		CurrentLevel++;
-	else {
-		LoseExibirPontuacao( );
-		return 0;
-	}
-
-	if ( RunGame( CurrentLevel ) )
-		CurrentLevel++;
-	else {
-		LoseExibirPontuacao( );
-		return 0;
-	}
-
-	if ( RunGame( CurrentLevel ) )
-		CurrentLevel++;
-	else {
-		LoseExibirPontuacao( );
-		return 0;
-	}
-
 
 	system( "cls" );
 	printf( "Parabéns, voce ganhou o jogo!\n" );
@@ -395,50 +377,6 @@ int startgame( ) {
 
 	return 0;
 }
-
-//#include <stdio.h>
-//#include <stdlib.h>
-//
-//// Estrutura para armazenar as variáveis
-//
-//
-//
-//int main( ) {
-//	const char * filename = "dados.bin";
-//	LevelInfo data;
-//
-//	// Inserir valores para salvar
-//	printf( "Digite o primeiro inteiro: " );
-//	scanf( "%d" , &data.width );
-//
-//	printf( "Digite o segundo inteiro: " );
-//	scanf( "%d" , &data.height );
-//
-//	printf( "Digite um número real: " );
-//	scanf( "%f" , &data.Speed );
-//
-//	// Salvar dados no arquivo
-//	saveToFile( filename , &data );
-//
-//	// Limpar os valores para simular leitura
-//	data.height = 0;
-//	data.width = 0;
-//	data.Speed = 0.0f;
-//
-//	// Ler dados do arquivo
-//	readFromFile( filename , &data );
-//
-//	// Exibir os valores lidos
-//	printf( "Valores lidos do arquivo:\n" );
-//	printf( "Primeiro inteiro: %d\n" , data.height );
-//	printf( "Segundo inteiro: %d\n" , data.width );
-//	printf( "Número real: %.2f\n" , data.Speed );
-//
-//	return 0;
-//}
-
-
-
 
 int main( ) {
 	setlocale( LC_ALL , "pt_BR.UTF-8" );
