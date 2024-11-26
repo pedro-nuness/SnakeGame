@@ -104,17 +104,17 @@ void draw_board( int BoardWidth , int BoardHeight ) {
 
 
 void generate_food( int BoardWidth , int BoardHeight ) {
-	int valid = 0;
+	int validPosition = 0;
 
-	while ( !valid ) {
+	while ( !validPosition ) {
 		food.x = rand( ) % ( BoardWidth - 2 ) + 1;
 		food.y = rand( ) % ( BoardHeight - 2 ) + 1;
 
 		// Verifica se a comida gerada está em uma posição ocupada pela cobra
-		valid = 1;
+		validPosition = 1;
 		for ( int i = 0; i < snake_length; i++ ) {
 			if ( snake[ i ].x == food.x && snake[ i ].y == food.y ) {
-				valid = 0;
+				validPosition = 0;
 				break;
 			}
 		}
@@ -216,12 +216,11 @@ int RunGame( float speed , int BoardWidth , int BoardHeight ) {
 	// Reseta o tamanho da cobra
 	snake_length = 1;
 	game_over = 0;
-	// Inicializa o restante do corpo da cobra, se necessário
+	// reseta o restante do corpo da cobra
 	for ( int i = 1; i < MAX_WIDTH * MAX_HEIGHT; i++ ) {
 		snake[ i ].x = 0;
 		snake[ i ].y = 0;
 	}
-
 
 	generate_food( BoardWidth , BoardHeight );
 
@@ -241,17 +240,14 @@ int RunGame( float speed , int BoardWidth , int BoardHeight ) {
 		double elapsed_time = ( double ) ( end.QuadPart - start.QuadPart ) / frequency.QuadPart;
 		double board_elapsed_time = ( double ) ( boardEnd.QuadPart - boardStart.QuadPart ) / frequency.QuadPart;
 
-		// Atualiza o jogo
 		if ( elapsed_time >= frame_duration ) {
 			start = end;
-
 			update_direction( );
 			move_snake( );
 			eat_food( BoardWidth , BoardHeight );
 			check_collision( BoardWidth , BoardHeight );
 		}
 
-		// Atualiza o desenho da board 
 		if ( board_elapsed_time >= board_update_duration ) {
 			boardStart = boardEnd;
 			draw_board( BoardWidth , BoardHeight );
